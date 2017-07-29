@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8"></meta>
+	<title></title>
+	<link rel="stylesheet" type="text/css" href="../themes/default/easyui.css" />
+	<link rel="stylesheet" type="text/css" href="../themes/icon.css" />
+	<script type="text/javascript" src="../js/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/jquery.easyui.min.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			var pager = $('#dg').datagrid('getPager');    // get the pager of datagrid 
+			pager.pagination({
+				showPageList:true
+			});
+		});	
+
+	</script>
+</head>
+<body>
+	<h2>异常域名列表</h2>
+	<div style="margin:20px 0;">
+		<a href="domainResult">域名管理信息列表</a>
+	</div>
+
+	<table id="dg" class="easyui-datagrid" title="异常域名列表" style="width:1950px;height:auto"
+			data-options="singleSelect:true,url:'errorDomainList',method:'post'" 
+			iconCls="icon-edit"  pagination='true'>
+		<thead>
+			<tr>
+				<th data-options="field:'domain',width:200">域名</th>
+				<th data-options="field:'errorMsg',width:300">错误信息</th>
+
+			</tr>
+		</thead>
+	</table>
+
+</body>
+</html>

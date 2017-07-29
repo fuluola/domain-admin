@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8"></meta>
+	<title>域名采集管理页面</title>
+	<link rel="stylesheet" type="text/css" href="../themes/default/easyui.css" />
+	<link rel="stylesheet" type="text/css" href="../themes/icon.css" />
+	<script type="text/javascript" src="../js/jquery.min.js"></script>
+	<script type="text/javascript" src="../js/jquery.easyui.min.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			var pager = $('#dg').datagrid('getPager');    // get the pager of datagrid 
+			pager.pagination({
+				showPageList:true
+			});
+		});	
+		
+		function doSearch(){
+			$('#dg').datagrid('load',{
+				param: $('#param').val()
+			});
+		}
+		
+		var editIndex = undefined;
+		function endEditing(){
+			if (editIndex == undefined){return true}
+			if ($('#dg').datagrid('validateRow', editIndex)){
+				var ed = $('#dg').datagrid('getEditor', {index:editIndex,field:'domainName'});
+				$('#dg').datagrid('endEdit', editIndex);
+				editIndex = undefined;
+				return true;
+			} else {
+				return false;
+			}
+		}
+		function onClickRow(index){
+			if (editIndex != index){
+				if (endEditing()){
+					$('#dg').datagrid('selectRow', index)
+							.datagrid('beginEdit', index);
+					editIndex = index;
+				} else {
+					$('#dg').datagrid('selectRow', editIndex);
+				}
+			}
+		}
+		function accept(){
+			if (endEditing()){
+				$('#dg').datagrid('acceptChanges');
+				var selectedRow = $("#dg").datagrid('getSelected'); 
+				if(selectedRow.remark==""){
+					return;
+				}
+				$.ajax({
+					type:"POST",
+					url:"updateRemark",
+					data: {"domain": selectedRow.domainName,"remark":selectedRow.remark},
+					success: function (data) {
+			        	//jAlert(data);
+			        },
+			        error: function(data) {
+			            alert("error:"+data.responseText);
+			        }
+				});
+			}
+		}
+
+        //格式化单元格提示信息  
+        function formatCellTooltip(value){
+        	if(value==null){
+        		value="";
+        	}
+            return "<span title="+value+">"+value+"</span>";
+        }
+ 
+	</script>
+</head>
+<body>
+	<h2>域名综合信息列表</h2>
+	<div style="margin:20px 0;"><a href="errorDomain">异常域名列表</a></div>
+
+<div id="query" style="padding:3px">
+	<span>查询参数:</span>
+	<input id="param" class="easyui-textbox" type="text" name="param" />
+	<a id="searchBtn" href="#" class="easyui-linkbutton"  onclick="doSearch()">Search</a>
+</div>
+	<table id="dg" class="easyui-datagrid" title="域名综合信息列表" style="width:1900px;height:auto"
+			data-options="singleSelect:true,toolbar: '#tb',url:'domainList',method:'post',onClickRow: onClickRow" 
+			iconCls="icon-edit"  pagination='true'>
+		<thead>
+			<tr>
+				<th data-options="field:'domainName',width:150">域名</th>
+				<th data-options="field:'registrar',width:100">注册商</th>
+			<!--<th data-options="field:'registrantOrganization',width:200">注册机构</th> -->
+				<th data-options="field:'registrantName',width:80,align:'right'">注册人</th>
+				<th data-options="field:'registrantPhone',width:80,align:'right'">注册人电话</th>
+				<th data-options="field:'registrantEmail',width:150,align:'right'">注册人邮箱</th>
+				<th data-options="field:'creationDate',width:100">域名创建时间</th>
+				<th data-options="field:'expirationDate',width:100">域名到期时间</th>
+				<th data-options="field:'googlePR',width:50">googlePR</th>
+				<th data-options="field:'remark',width:80,align:'center',editor:'textbox'">备注</th>
+				<th data-options="field:'nsServer',width:130,align:'right'">nsServer</th>
+				<th data-options="field:'dnsServer',width:130,align:'right'">dnsServer</th>
+				<th data-options="field:'ip',width:100,align:'center'">IP</th>
+				<th data-options="field:'ipAddress',width:60,align:'center'">IP归属地</th>
+				<th data-options="field:'title',width:200,align:'center',formatter:formatCellTooltip">网站title</th>
+				<th data-options="field:'keywords',width:200,align:'center',formatter:formatCellTooltip">网站keywords</th>
+				<th data-options="field:'description',width:200,align:'center',formatter:formatCellTooltip">网站描述</th>
+			
+			</tr>
+		</thead>
+	</table>
+	
+	<div id="tb" style="height:auto">
+		<a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-save',plain:true" onclick="accept()">添加备注</a>
+	</div>
+</body>
+</html>
