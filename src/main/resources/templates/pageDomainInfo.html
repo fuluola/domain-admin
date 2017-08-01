@@ -72,7 +72,10 @@
         	}
             return "<span title="+value+">"+value+"</span>";
         }
- 
+ 		
+        function domainExport(){
+        	window.open("export?param="+$('#param').val(),"_blank");
+        }
 	</script>
 </head>
 <body>
@@ -82,7 +85,8 @@
 <div id="query" style="padding:3px">
 	<span>查询参数:</span>
 	<input id="param" class="easyui-textbox" type="text" name="param" />
-	<a id="searchBtn" href="#" class="easyui-linkbutton"  onclick="doSearch()">Search</a>
+	<a id="searchBtn" href="#" class="easyui-linkbutton"  onclick="doSearch()">Search</a>&nbsp;&nbsp;
+	<a id="exportBtn" href="#" class="easyui-linkbutton"  onclick="domainExport()">Export</a>
 </div>
 	<table id="dg" class="easyui-datagrid" title="域名综合信息列表" style="width:1900px;height:auto"
 			data-options="singleSelect:true,toolbar: '#tb',url:'domainList',method:'post',onClickRow: onClickRow" 

@@ -31,8 +31,15 @@ import com.fuluola.model.QueryDomainRespMessage;
 public class DomainRepository {
 	
 	private static Logger logger = LoggerFactory.getLogger(DomainRepository.class);
+	/**
+	 * 导入域名sql
+	 */
 	private static String insertSQL = "insert into domain (domain,status,errorCount,createTime) values(?,0,0,now())"; 
+	/**
+	 * 查询导入域名详情
+	 */
 	private static String findSQL = "select domain,status,createTime,errorCount from domain where domain=?";
+	
 	private static String processSQL = "select domain,status,errorCount,createTime from domain where status=0 and errorCount<3 order by createTime asc limit 200";
 	private static String updateSUCCESS_SQL = "update domain set status=1,errorMsg=null,updateTime=now() where domain=?";
 	private static String updateERROR_SQL = "update domain set errorMsg=?,errorCount=errorCount+1,updateTime=now() where domain=?";
@@ -54,6 +61,7 @@ public class DomainRepository {
 	private static String queryUngetedDomainSQL = "SELECT domain,errorMsg FROM domain WHERE status=0 limit ?,?";
 	
 	private static String queryUngetedDomainCountSQL = "SELECT count(1) FROM domain WHERE status=0";
+	
 	private JdbcTemplate jdbc;
 	
 	public DomainRepository(JdbcTemplate jdbc){
@@ -130,7 +138,6 @@ public class DomainRepository {
 
 	/**
 	 * @date 2017年7月17日下午11:02:42
-	 * @author fuzhuan
 	 * @return
 	 * 
 	 */
@@ -158,6 +165,24 @@ public class DomainRepository {
 		return jdbc.queryForObject(queryUngetedDomainCountSQL, Integer.class);
 	}
 
+	/**
+	 * @desc 查询导出的采集信息
+	 * @date 2017年8月1日 下午3:43:49
+	 * @param params
+	 * @return
+	 */
+	public List<Map<String,Object>> findDownloadDomain(Map<String,Object> params){
+
+		int rows = (Integer) params.get("rows");		
+		String param = (String) params.get("param");
+		if(!StringUtils.isEmptyOrWhitespace(param)){
+			String conditionSQL = pageQueryCondition_SQL.replaceAll("\\?", param);
+			return jdbc.queryForList("select * from domaininfo_collect "+conditionSQL+"limit 0,?",rows);
+		}else{
+			return null;
+		}
+
+	}
 }
 
 class DomainResultSetExtractor implements ResultSetExtractor<PreDomainInfo> {
