@@ -41,21 +41,17 @@ public class DomainRepository {
 	private static String findSQL = "select domain,status,createTime,errorCount from domain where domain=?";
 	
 	private static String processSQL = "select domain,status,errorCount,createTime from domain where status=0 and errorCount<3 order by createTime asc limit 200";
-	private static String updateSUCCESS_SQL = "update domain set status=1,errorMsg=null,updateTime=now() where domain=?";
-	private static String updateERROR_SQL = "update domain set errorMsg=?,errorCount=errorCount+1,updateTime=now() where domain=?";
 	
-	private static String pageQueryDomainInfo_SQL = "select * from domaininfo_collect limit ?,? ";
+	private static String pageQueryDomainInfo_SQL = "select * from domaininfo_collect order by createTime desc limit ?,?  ";
+	
 	private static String pageQueryDomainTotal = "select count(1) from domaininfo_collect";
 	
 	private static String pageQueryCondition_SQL = 
 			"where domainName like '%?%' or registrar like '%?%' or registrantName like '%?%' or registrantPhone like '%?%' or "
 			+ "registrantEmail like '%?%' or nsServer like '%?%' or dnsServer like '%?%' or ip like '%?%' or ipAddress like '%?%' "
-			+ "or title like '%?%' or keywords like '%?%' or description like '%?%' or remark like '%?%' ";
+			+ "or title like '%?%' or keywords like '%?%' or description like '%?%' or remark like '%?%' or batch like '?%' ";
 	
-	private static String insertDomainInfoSQL= "INSERT INTO domaininfo_collect (domainName,registrantOrganization,registrantName,"
-			+ "registrantPhone,registrantEmail,nsServer,dnsServer,creationDate,expirationDate,ip,ipAddress,"
-			+ "title,keywords,description,googlePR,createTime) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now())";
-	
+
 	private static String updateRemarkSQL = "update domaininfo_collect set remark=? where domainName=?";
 	
 	private static String queryUngetedDomainSQL = "SELECT domain,errorMsg FROM domain WHERE status=0 limit ?,?";
@@ -89,37 +85,6 @@ public class DomainRepository {
 
 		return jdbc.queryForList(processSQL);
 		  
-	}
-	
-	@Transactional
-	public void processSingleDomain(String data){
-		QueryDomainRespMessage respMsg=infoService.domainInfoQuery(data);
-		if(respMsg==null) {
-			jdbc.update(updateERROR_SQL, new Object[]{"该域名没有找到注册信息",data});
-		}else if(Constants.SUCCESS.equals(respMsg.getCode())){
-			DomainObject domainInfo = respMsg.getDomainObject();
-			jdbc.update(updateSUCCESS_SQL, new Object[]{data});
-			jdbc.update(insertDomainInfoSQL, domainInfo.getDomainName(),domainInfo.getRegistrantOrganization(),domainInfo.getRegistrantName(),
-								domainInfo.getRegistrantPhone(),domainInfo.getRegistrantEmail(),domainInfo.getNsServer(),
-								domainInfo.getDnsServer(),domainInfo.getCreationDate(),domainInfo.getExpirationDate(),
-								domainInfo.getIp(),domainInfo.getIpAddress(),domainInfo.getTitle(),domainInfo.getKeywords(),
-								domainInfo.getDescription(),domainInfo.getGooglePR());
-		}else{
-			jdbc.update(updateERROR_SQL, new Object[]{respMsg.getExceptionMsg(),data});
-		}
-	}
-	
-	public String processBatchDomain(){
-		List<Map<String,Object>> list= queryProcessDomain();
-		logger.info("本次共处理"+list.size()+"条记录!");
-		if(list.size()>=1){
-			for(Map<String,Object> map:list){
-				String domain = (String) map.get("domain");
-				logger.info("开始采集信息，域名："+domain);
-				processSingleDomain(domain);
-			}
-		}
-		return "";
 	}
 	
 	public List<Map<String,Object>> pageQueryDomainInfo(Map<String,Object> params){

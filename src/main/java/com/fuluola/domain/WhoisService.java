@@ -272,7 +272,7 @@ public class WhoisService {
       //  System.out.println(w.query("spring.io")); 
         long start=System.currentTimeMillis();
         //QueryDomainRespMessage
-        String msg = w.queryWhoisServer("geescomelec.com", "whois.verisign-grs.com");
+        String msg = w.queryWhoisServer("tpkfoundation.com", "whois.verisign-grs.com");
 
         System.out.println("用时: "+(System.currentTimeMillis()-start));
         System.out.println(msg);
