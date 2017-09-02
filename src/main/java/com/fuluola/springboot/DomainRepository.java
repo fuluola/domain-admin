@@ -42,7 +42,7 @@ public class DomainRepository {
 	
 	private static String processSQL = "select domain,status,errorCount,createTime from domain where status=0 and errorCount<3 order by createTime asc limit 200";
 	
-	private static String pageQueryDomainInfo_SQL = "select * from domaininfo_collect order by createTime desc limit ?,?  ";
+	private static String pageQueryDomainInfo_SQL = "select * from domaininfo_collect order by ? ? limit ?,?  ";
 	
 	private static String pageQueryDomainTotal = "select count(1) from domaininfo_collect";
 	
@@ -63,8 +63,6 @@ public class DomainRepository {
 	public DomainRepository(JdbcTemplate jdbc){
 		this.jdbc = jdbc;
 	}
-	@Autowired
-	private DomainInfoService infoService;
 	
 	public PreDomainInfo findByDomain(String data){
 		
@@ -90,14 +88,24 @@ public class DomainRepository {
 	public List<Map<String,Object>> pageQueryDomainInfo(Map<String,Object> params){
 
 		int start=(Integer) params.get("start");
-		int rows = (Integer) params.get("rows");		
+		int rows = (Integer) params.get("rows");
+		String sort= (String) params.get("sort");
+		String order =  (String) params.get("order");	
 		String param = (String) params.get("param");
+		if(sort==null){
+			sort="createTime";
+		}
+		if(order==null){
+			order="desc";
+		}
 		if(!StringUtils.isEmptyOrWhitespace(param)){
 			String conditionSQL = pageQueryCondition_SQL.replaceAll("\\?", param);
-			return jdbc.queryForList("select * from domaininfo_collect "+conditionSQL+"limit ?,?",start,rows);
+			return jdbc.queryForList("select * from domaininfo_collect "+conditionSQL+
+					" order by " +sort +" " + order + " limit ?,?",start,rows);
+					
 		}else{
-			return jdbc.queryForList(pageQueryDomainInfo_SQL,start,rows);
-		}
+			return jdbc.queryForList("select * from domaininfo_collect order by "+sort+" "+order+" limit ?,?",start,rows);
+		}	
 
 	}
 

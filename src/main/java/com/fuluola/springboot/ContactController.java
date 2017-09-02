@@ -62,12 +62,17 @@ public class ContactController {
 		String page = request.getParameter("page");
 		String rows = request.getParameter("rows");
 		String param = request.getParameter("param");
+		String sort = request.getParameter("sort");
+		String order = request.getParameter("order");
 		if(!StringUtils.isEmptyOrWhitespace(param)){
 			model.put("param", param);
 		}
 		Integer start = (Integer.parseInt(page)-1)*Integer.parseInt(rows);
 		model.put("start",start);
 		model.put("rows",Integer.parseInt(rows));
+		model.put("sort",sort);
+		model.put("order",order);
+		logger.info("domain page list params:{}",model);
 		List<Map<String,Object>> resultMap = domainRepo.pageQueryDomainInfo(model);
 		Integer total = domainRepo.pageQueryDomainTotal(param);
 		model.clear();
